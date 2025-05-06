@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "TRMNL E-Ink Display",
-        "description": "Enter your TRMNL API key",
+        "description": "Enter your TRMNL API key (the user API key found in https://usetrmnl.com/account, not the device API key).",
         "data": {
           "api_key": "API Key"
         }
