@@ -1,0 +1,18 @@
+{
+  "data": [
+    {
+      "name": "Kitchen TRMNL",
+      "friendly_id": "ABC123",
+      "mac_address": "AA:BB:CC:DD:EE:FF",
+      "battery_voltage": 3.92,
+      "rssi": -68
+    },
+    {
+      "name": "Office TRMNL",
+      "friendly_id": "XYZ789",
+      "mac_address": "11:22:33:44:55:66",
+      "battery_voltage": 4.15,
+      "rssi": -54
+    }
+  ]
+}

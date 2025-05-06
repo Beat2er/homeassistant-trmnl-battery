@@ -1,0 +1,52 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Home Assistant
+.storage
+.cloud
+.google.token
+.HA_VERSION
+home-assistant.log
+home-assistant_v2.*
+tts/
+.ps4-games.*.json
+.xbox-games.*.json
+*.db-shm
+*.db-wal
+*.db
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/

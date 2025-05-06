@@ -1,0 +1,6 @@
+{
+  "name": "TRMNL E-Ink Display Battery",
+  "render_readme": true,
+  "iot_class": "cloud_polling",
+  "homeassistant": "2023.4.0"
+}

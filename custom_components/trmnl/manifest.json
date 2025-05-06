@@ -1,0 +1,12 @@
+{
+  "domain": "trmnl",
+  "name": "TRMNL E-Ink Display Battery",
+  "config_flow": true,
+  "documentation": "https://github.com/Beat2er/homeassistant-trmnl-battery",
+  "issue_tracker": "https://github.com/Beat2er/homeassistant-trmnl-battery/issues",
+  "requirements": ["requests>=2.25.1"],
+  "dependencies": [],
+  "codeowners": ["@Beat2er"],
+  "version": "0.1.0",
+  "iot_class": "cloud_polling"
+}
