@@ -32,7 +32,11 @@ This integration allows you to monitor your TRMNL e-ink display devices from Hom
 1. Go to Settings -> Devices & Services
 2. Click "+ Add Integration"
 3. Search for "TRMNL"
-4. Enter your API key (you can find this in your TRMNL account)
+4. Enter your API key (you can find this in your TRMNL account).
+5. Optionally, you can configure the **API Endpoint URL** if you are using a self-hosted or alternative TRMNL service. The default is `https://usetrmnl.com/api/devices`.
+6. Optionally, you can configure the **Polling Interval** in seconds. This determines how frequently Home Assistant checks for updates from the TRMNL API. The default is 300 seconds (5 minutes), and the minimum allowed is 60 seconds (1 minute).
+
+These settings can also be changed later by going to the integration's options (Settings -> Devices & Services -> TRMNL -> Configure).
 
 ## Entities
 
@@ -54,7 +58,10 @@ The integration calculates battery percentage based on the following assumptions
 
 ## Data Update Frequency
 
-By default, the integration checks for updates every 5 minutes. This can be changed in the code if needed.
+The integration checks for updates from the TRMNL API at a configurable interval.
+- **Default Polling Interval**: 5 minutes (300 seconds).
+- **Minimum Polling Interval**: 1 minute (60 seconds).
+This interval can be set during the initial setup of the integration and can be modified later via the integration's configuration options in Home Assistant (Settings -> Devices & Services -> TRMNL -> Configure).
 
 ## Support
 
