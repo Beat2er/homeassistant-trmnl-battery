@@ -219,9 +219,32 @@ class TrmnlLastSeenSensor(TrmnlBaseSensor):
     @property
     def state(self):
         """Return the state of the sensor."""
-        # Always use current time when data is successfully refreshed
-        if self.coordinator.last_update_success:
-            return dt_util.utcnow().isoformat()
+        rendered_at_str = self.coordinator.last_rendered_at
+        if rendered_at_str:
+            try:
+                # Attempt to parse the timestamp.
+                # TRMNL API's `rendered_at` format is assumed to be ISO 8601.
+                # If it's a different format, this parsing might need adjustment.
+                # Example from a similar API: "2023-10-26T10:30:00Z"
+                parsed_datetime = dt_util.parse_datetime(rendered_at_str)
+                if parsed_datetime:
+                    # Ensure it's timezone-aware and in UTC for Home Assistant
+                    return dt_util.as_utc(parsed_datetime).isoformat()
+                else:
+                    _LOGGER.warning(
+                        "Failed to parse 'rendered_at' timestamp: %s for device %s",
+                        rendered_at_str,
+                        self._friendly_id
+                    )
+                    return None # Or handle as an error state if preferred
+            except ValueError as e:
+                _LOGGER.error(
+                    "ValueError parsing 'rendered_at' timestamp '%s' for device %s: %s",
+                    rendered_at_str,
+                    self._friendly_id,
+                    e
+                )
+                return None
         return None
 
     @property

@@ -40,21 +40,48 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     client = TrmnlApiClient(api_key, api_endpoint)
 
-    async def async_update_data():
-        """Fetch data from API."""
-        try:
-            return await hass.async_add_executor_job(client.get_devices)
-        except Exception as err:
-            raise UpdateFailed(f"Error communicating with API: {err}")
-
     coordinator = DataUpdateCoordinator(
         hass,
         _LOGGER,
         name=DOMAIN,
-        update_method=async_update_data,
+        # update_method will be set after coordinator initialization
         update_interval=timedelta(seconds=scan_interval),
     )
+    # Initialize last_rendered_at on the coordinator instance
+    coordinator.last_rendered_at = None
 
+    async def async_update_data():
+        """Fetch data from API, including devices and current screen info."""
+        devices_data = None
+        try:
+            devices_data = await hass.async_add_executor_job(client.get_devices)
+        except Exception as err:
+            # If get_devices fails, we consider the whole update failed.
+            raise UpdateFailed(f"Error communicating with API for devices: {err}")
+
+        try:
+            rendered_at_new = await hass.async_add_executor_job(client.get_current_screen_info)
+            if rendered_at_new is not None:
+                coordinator.last_rendered_at = rendered_at_new
+            # If rendered_at_new is None, coordinator.last_rendered_at remains unchanged.
+        except Exception as err:
+            # Log a warning if fetching screen info fails, but don't fail the devices update.
+            _LOGGER.warning("Error fetching TRMNL current screen info: %s. Proceeding with device data only.", err)
+            # We don't re-raise UpdateFailed here, as device data might still be useful.
+            # If devices_data is None due to an earlier failure, this won't execute or matter.
+        
+        # Ensure devices_data is returned, even if screen info failed.
+        # If devices_data itself failed, UpdateFailed was already raised.
+        if devices_data is None:
+            # This case should ideally be covered by the first try-except raising UpdateFailed
+            # if get_devices returns None or fails in a way that doesn't raise immediately.
+            # However, to be safe, if devices_data is still None here, it's an issue.
+            _LOGGER.error("Device data is None after update attempt, this should not happen if get_devices succeeded.")
+            raise UpdateFailed("Failed to retrieve device data, and screen info may also have failed.")
+            
+        return devices_data
+
+    coordinator.update_method = async_update_data
     await coordinator.async_config_entry_first_refresh()
 
     if not coordinator.last_update_success:

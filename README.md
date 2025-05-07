@@ -45,7 +45,7 @@ For each TRMNL device, the integration creates the following entities:
 - **Battery Voltage**: Shows the current battery voltage in volts
 - **Battery Percentage**: Shows the calculated battery level as a percentage
 - **WiFi Signal Strength**: Shows the WiFi RSSI value in dBm
-- **Last Seen**: Shows when the device was last seen by the TRMNL server
+- **Last Seen**: Shows the timestamp of the last successful screen render by the TRMNL server for your account. This value is updated only when the TRMNL API provides a new render time; if the API indicates no new render (e.g., due to polling intervals not aligning), this sensor will retain the last known render time.
 
 All sensors include a `last_updated` attribute that shows when Home Assistant last retrieved data from the TRMNL API.
 
@@ -62,6 +62,20 @@ The integration checks for updates from the TRMNL API at a configurable interval
 - **Default Polling Interval**: 5 minutes (300 seconds).
 - **Minimum Polling Interval**: 1 minute (60 seconds).
 This interval can be set during the initial setup of the integration and can be modified later via the integration's configuration options in Home Assistant (Settings -> Devices & Services -> TRMNL -> Configure).
+
+## Understanding the "Last Seen" Timestamp
+
+The "Last Seen" timestamp reflects when the TRMNL server last rendered a new screen image for your account. It's important to understand the different update cycles involved:
+
+1.  **TRMNL Server Render Interval (X)**: This is how often the TRMNL servers internally generate a new image for display. This interval is determined by TRMNL's backend.
+2.  **TRMNL Device Refresh Interval (Y)**: This is how often your physical TRMNL e-ink display contacts the TRMNL servers to fetch the latest image. This is typically configured on the device or through your TRMNL account settings.
+3.  **Home Assistant Integration Polling Interval (Z)**: This is how often this Home Assistant integration queries the TRMNL API (both for device status and the `current_screen` information). You configure this in Home Assistant.
+
+Because these three intervals (X, Y, and Z) operate independently and may not align perfectly:
+- The TRMNL API endpoint (`/api/current_screen/`) might return `null` for the `rendered_at` field. This can happen if the Home Assistant integration polls at a moment when the TRMNL server hasn't rendered a new screen since the last check, or if the content of the screen hasn't changed.
+- This integration is designed to handle this: it will only update the "Last Seen" sensor's value when the API provides a new, non-null `rendered_at` timestamp. If `null` is received, the sensor will continue to show the previously recorded valid "Last Seen" time.
+
+This means the "Last Seen" time indicates the most recent screen generation confirmed by the API, not necessarily the exact moment your Home Assistant polled the API or the exact moment your physical device refreshed.
 
 ## Support
 
