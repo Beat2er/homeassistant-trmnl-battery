@@ -1,8 +1,8 @@
 # Home Assistant TRMNL Integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/yourusername/homeassistant-trmnl)](https://github.com/Beat2er/homeassistant-trmnl-battery/releases)
-[![GitHub license](https://img.shields.io/github/license/yourusername/homeassistant-trmnl)](https://github.com/Beat2er/homeassistant-trmnl-battery/blob/main/LICENSE)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/Beat2er/homeassistant-trmnl-battery)](https://github.com/Beat2er/homeassistant-trmnl-battery/releases)
+[![GitHub license](https://img.shields.io/github/license/Beat2er/homeassistant-trmnl-battery)](https://github.com/Beat2er/homeassistant-trmnl-battery/blob/main/LICENSE)
 
 This integration allows you to monitor your TRMNL e-ink display devices from Home Assistant, showing battery voltage, battery percentage, and WiFi signal strength.
 
