@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, MIN_VOLTAGE, MAX_VOLTAGE
+from .const import DOMAIN, MIN_VOLTAGE, MAX_VOLTAGE, CONF_DEVICE_ACCESS_TOKEN # Added import
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,7 +37,9 @@ async def async_setup_entry(
         entities.append(TrmnlBatterySensor(coordinator, device))
         entities.append(TrmnlBatteryPercentageSensor(coordinator, device))
         entities.append(TrmnlRssiSensor(coordinator, device))
-        entities.append(TrmnlLastSeenSensor(coordinator, device))
+        # Conditionally add TrmnlLastSeenSensor
+        if entry.data.get(CONF_DEVICE_ACCESS_TOKEN): # Check if token is provided
+            entities.append(TrmnlLastSeenSensor(coordinator, device))
 
     async_add_entities(entities)
 

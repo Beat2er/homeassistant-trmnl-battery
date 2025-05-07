@@ -29,12 +29,13 @@ This integration allows you to monitor your TRMNL e-ink display devices from Hom
 
 ## Configuration
 
-1. Go to Settings -> Devices & Services
-2. Click "+ Add Integration"
-3. Search for "TRMNL"
-4. Enter your API key (you can find this in your TRMNL account).
-5. Optionally, you can configure the **API Base URL** if you are using a self-hosted or alternative TRMNL service (e.g., `https://your.trmnl.server.com`). The default is `https://usetrmnl.com`. The integration will automatically append paths like `/api/devices` and `/api/current_screen` to this base URL.
-6. Optionally, you can configure the **Polling Interval** in seconds. This determines how frequently Home Assistant checks for updates from the TRMNL API. The default is 300 seconds (5 minutes), and the minimum allowed is 60 seconds (1 minute).
+1. Go to Settings -> Devices & Services.
+2. Click "+ Add Integration".
+3. Search for "TRMNL".
+4. Enter your **API Key**. This is mandatory and used for fetching general device information (battery, RSSI). It typically uses `Authorization: Bearer YOUR_API_KEY` authentication.
+5. Optionally, configure the **API Base URL** if you are using a self-hosted or alternative TRMNL service (e.g., `https://your.trmnl.server.com`). The default is `https://usetrmnl.com`. The integration appends paths like `/api/devices` and `/api/current_screen` to this base URL.
+6. Optionally, provide a **Device Access Token**. This token is specifically used to fetch the `current_screen` information from the `/api/current_screen` endpoint (which typically uses `access-token: YOUR_DEVICE_ACCESS_TOKEN` authentication) and is required for the "Last Seen" sensor. If this token is not provided, the "Last Seen" sensor will not be created.
+7. Optionally, configure the **Polling Interval** in seconds. This determines how frequently Home Assistant checks for updates from the TRMNL API. The default is 300 seconds (5 minutes), and the minimum allowed is 60 seconds (1 minute).
 
 These settings can also be changed later by going to the integration's options (Settings -> Devices & Services -> TRMNL -> Configure).
 
@@ -42,10 +43,10 @@ These settings can also be changed later by going to the integration's options (
 
 For each TRMNL device, the integration creates the following entities:
 
-- **Battery Voltage**: Shows the current battery voltage in volts
-- **Battery Percentage**: Shows the calculated battery level as a percentage
-- **WiFi Signal Strength**: Shows the WiFi RSSI value in dBm
-- **Last Seen**: Shows the timestamp of the last successful screen render by the TRMNL server for your account. This value is updated only when the TRMNL API provides a new render time; if the API indicates no new render (e.g., due to polling intervals not aligning), this sensor will retain the last known render time.
+- **Battery Voltage**: Shows the current battery voltage in volts.
+- **Battery Percentage**: Shows the calculated battery level as a percentage.
+- **WiFi Signal Strength**: Shows the WiFi RSSI value in dBm.
+- **Last Seen** (Optional): Shows the timestamp of the last successful screen render by the TRMNL server for your account. This sensor is only created if you provide the "Device Access Token" during configuration. It is updated only when the TRMNL API provides a new render time; if the API indicates no new render (e.g., due to polling intervals not aligning), this sensor will retain the last known render time.
 
 All sensors include a `last_updated` attribute that shows when Home Assistant last retrieved data from the TRMNL API.
 

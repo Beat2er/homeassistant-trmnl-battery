@@ -3,10 +3,11 @@
     "step": {
       "user": {
         "title": "TRMNL Setup",
-        "description": "Enter your TRMNL API key and optionally customize the API base URL and polling interval.",
+        "description": "Enter your TRMNL API key, API base URL, and optionally a Device Access Token for the 'Last Seen' sensor.",
         "data": {
           "api_key": "API Key",
           "api_base_url": "API Base URL (Optional, e.g., https://usetrmnl.com)",
+          "device_access_token": "Device Access Token (Optional, for Last Seen sensor)",
           "scan_interval": "Polling Interval - seconds (Optional, min 60)"
         }
       }
@@ -24,9 +25,10 @@
     "step": {
       "init": {
         "title": "TRMNL Options",
-        "description": "Adjust the API base URL and polling interval for your TRMNL integration.",
+        "description": "Adjust the API base URL, Device Access Token, and polling interval for your TRMNL integration.",
         "data": {
           "api_base_url": "API Base URL (e.g., https://usetrmnl.com)",
+          "device_access_token": "Device Access Token (Optional, for Last Seen sensor, leave blank to disable)",
           "scan_interval": "Polling Interval - seconds (min 60)"
         }
       }

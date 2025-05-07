@@ -1,7 +1,7 @@
 """Config flow for TRMNL integration."""
 import logging
 import voluptuous as vol
-import requests # Added for specific exception handling
+import requests
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
@@ -13,9 +13,10 @@ from .const import (
     DOMAIN,
     CONF_API_KEY,
     CONF_SCAN_INTERVAL,
-    CONF_API_BASE_URL, # Updated
+    CONF_API_BASE_URL,
+    CONF_DEVICE_ACCESS_TOKEN, # Added
     DEFAULT_SCAN_INTERVAL,
-    DEFAULT_API_BASE_URL, # Updated
+    DEFAULT_API_BASE_URL,
     MIN_SCAN_INTERVAL,
 )
 
@@ -29,82 +30,83 @@ class TrmnlFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _validate_input(self, hass: HomeAssistant, data: dict):
         """Validate the user input allows us to connect."""
-        # Construct TrmnlApiClient with the base URL
-        client = TrmnlApiClient(data[CONF_API_KEY], data.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL))
+        # Primary validation uses CONF_API_KEY and CONF_API_BASE_URL
+        # CONF_DEVICE_ACCESS_TOKEN is optional and its validity is implicitly checked
+        # by the functionality of the last_seen sensor.
+        client = TrmnlApiClient(
+            data[CONF_API_KEY],
+            data.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL),
+            # Device access token is not strictly needed for this initial validation call
+            # as get_devices uses the main API key.
+        )
         try:
-            # Test connection by fetching devices
             devices = await hass.async_add_executor_job(client.get_devices)
-            # Ensure devices is a list, even if empty. If API returns something else, it's an issue.
             if not isinstance(devices, list):
                 _LOGGER.error("API response for devices is not a list: %s", devices)
                 raise InvalidAuth("Received malformed data from TRMNL API")
-            # Not raising InvalidAuth for empty list, as an account might have no devices yet
-            # but still be valid. The check is more about connectivity and auth.
         except requests.exceptions.HTTPError as http_err:
             if http_err.response.status_code == 401:
-                _LOGGER.error("Authentication failed with TRMNL API: %s", http_err)
+                _LOGGER.error("Authentication failed with TRMNL API (main key): %s", http_err)
                 raise InvalidAuth("Invalid API key or base URL") from http_err
             _LOGGER.error("HTTP error connecting to TRMNL API: %s", http_err)
             raise ConnectionError("Failed to connect to TRMNL API (HTTP error)") from http_err
-        except requests.exceptions.RequestException as req_err: # Covers DNS, connection refused, etc.
+        except requests.exceptions.RequestException as req_err:
             _LOGGER.error("Request error connecting to TRMNL API: %s", req_err)
             raise ConnectionError("Failed to connect to TRMNL API (request error)") from req_err
-        except Exception as exc: # Catch any other unexpected errors during validation
+        except Exception as exc:
             _LOGGER.error("Unexpected error validating TRMNL API connection: %s", exc)
             raise ConnectionError(f"An unexpected error occurred: {exc}") from exc
 
-        return {"title": "TRMNL"}
-
+        return {"title": "TRMNL"} # Default title, can be customized if needed
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
         errors = {}
+        # Pre-fill with empty strings for optional fields if user_input is None (first show)
+        current_api_key = ""
+        current_api_base_url = DEFAULT_API_BASE_URL
+        current_device_access_token = ""
+        current_scan_interval = DEFAULT_SCAN_INTERVAL
 
         if user_input is not None:
-            # Ensure scan_interval is correctly handled if empty or missing
-            # and provide default for api_base_url if not provided
-            processed_input = {
-                CONF_API_KEY: user_input[CONF_API_KEY],
-                CONF_API_BASE_URL: user_input.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL).rstrip('/'),
-                CONF_SCAN_INTERVAL: user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
-            }
+            current_api_key = user_input.get(CONF_API_KEY, "")
+            current_api_base_url = user_input.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL).rstrip('/')
+            current_device_access_token = user_input.get(CONF_DEVICE_ACCESS_TOKEN, "") # Optional
+            current_scan_interval = user_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
+            processed_input = {
+                CONF_API_KEY: current_api_key,
+                CONF_API_BASE_URL: current_api_base_url,
+                CONF_DEVICE_ACCESS_TOKEN: current_device_access_token,
+                CONF_SCAN_INTERVAL: current_scan_interval,
+            }
 
             if processed_input[CONF_SCAN_INTERVAL] < MIN_SCAN_INTERVAL:
                 errors["base"] = "invalid_scan_interval"
             else:
                 try:
                     info = await self._validate_input(self.hass, processed_input)
-
                     await self.async_set_unique_id(processed_input[CONF_API_KEY])
                     self._abort_if_unique_id_configured()
-
-                    return self.async_create_entry(
-                        title=info["title"], # Using title from validation
-                        data=processed_input
-                    )
+                    return self.async_create_entry(title=info["title"], data=processed_input)
                 except InvalidAuth:
                     errors["base"] = "invalid_auth"
-                except ConnectionError: # Catch connection errors from _validate_input
-                    errors["base"] = "cannot_connect" # A more specific error key might be better
-                except Exception:  # pylint: disable=broad-except
+                except ConnectionError:
+                    errors["base"] = "cannot_connect"
+                except Exception:
                     _LOGGER.exception("Unexpected exception")
                     errors["base"] = "unknown"
-        else: # Show empty form if user_input is None
-            processed_input = {}
-
 
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_API_KEY, default=processed_input.get(CONF_API_KEY)): str,
-                    vol.Optional(
-                        CONF_API_BASE_URL, default=processed_input.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL)
-                    ): str,
-                    vol.Optional(
-                        CONF_SCAN_INTERVAL, default=processed_input.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-                    ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)),
+                    vol.Required(CONF_API_KEY, default=current_api_key): str,
+                    vol.Optional(CONF_API_BASE_URL, default=current_api_base_url): str,
+                    vol.Optional(CONF_DEVICE_ACCESS_TOKEN, default=current_device_access_token): str,
+                    vol.Optional(CONF_SCAN_INTERVAL, default=current_scan_interval): vol.All(
+                        vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)
+                    ),
                 }
             ),
             errors=errors,
@@ -113,31 +115,32 @@ class TrmnlFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        """Get the options flow for this handler."""
         return TrmnlOptionsFlowHandler(config_entry)
 
 class TrmnlOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle TRMNL options."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry):
-        """Initialize options flow."""
         self.config_entry = config_entry
-        # Store current values to pre-fill the form and compare for changes
         self.current_api_base_url = self.config_entry.data.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL)
+        self.current_device_access_token = self.config_entry.data.get(CONF_DEVICE_ACCESS_TOKEN, "")
         self.current_scan_interval = self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
     async def async_step_init(self, user_input=None):
-        """Manage the options."""
         errors = {}
         if user_input is not None:
             updated_data = self.config_entry.data.copy()
-            needs_validation = False
+            needs_main_api_validation = False
 
             # Process API Base URL
             new_api_base_url = user_input.get(CONF_API_BASE_URL, self.current_api_base_url).rstrip('/')
             if new_api_base_url != self.current_api_base_url:
                 updated_data[CONF_API_BASE_URL] = new_api_base_url
-                needs_validation = True # API base URL changed, needs re-validation
+                needs_main_api_validation = True
+
+            # Process Device Access Token (no direct validation here, just store it)
+            new_device_access_token = user_input.get(CONF_DEVICE_ACCESS_TOKEN, self.current_device_access_token)
+            updated_data[CONF_DEVICE_ACCESS_TOKEN] = new_device_access_token
 
             # Process Scan Interval
             new_scan_interval = user_input.get(CONF_SCAN_INTERVAL, self.current_scan_interval)
@@ -146,44 +149,39 @@ class TrmnlOptionsFlowHandler(config_entries.OptionsFlow):
             else:
                 updated_data[CONF_SCAN_INTERVAL] = new_scan_interval
 
-            if not errors: # Proceed if no scan interval error
-                if needs_validation:
+            if not errors:
+                if needs_main_api_validation:
                     try:
-                        # Validate with potentially new API base URL, using existing API key
+                        # Validate with potentially new API base URL, using existing main API key
                         validation_data = {
-                            CONF_API_KEY: self.config_entry.data[CONF_API_KEY],
+                            CONF_API_KEY: self.config_entry.data[CONF_API_KEY], # Main key
                             CONF_API_BASE_URL: new_api_base_url
+                            # device_access_token not needed for this validation
                         }
-                        # Re-use the validation logic from the main flow
                         flow_handler = TrmnlFlowHandler()
-                        flow_handler.hass = self.hass # Provide hass instance
+                        flow_handler.hass = self.hass
                         await flow_handler._validate_input(self.hass, validation_data)
-
                         # If validation passes, create/update the entry
                         return self.async_create_entry(title="", data=updated_data)
                     except InvalidAuth:
-                        errors["base"] = "invalid_base_url_auth" # Specific error for options
+                        errors["base"] = "invalid_base_url_auth"
                     except ConnectionError:
-                        errors["base"] = "cannot_connect_options" # Specific error for options
+                        errors["base"] = "cannot_connect_options"
                     except Exception:
                         _LOGGER.exception("Unexpected exception during options validation")
                         errors["base"] = "unknown_options"
-                else: # No validation needed, just update scan interval
+                else: # No main API validation needed, just update data
                     return self.async_create_entry(title="", data=updated_data)
-
 
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(
-                        CONF_API_BASE_URL,
-                        default=self.current_api_base_url,
-                    ): str,
-                    vol.Optional(
-                        CONF_SCAN_INTERVAL,
-                        default=self.current_scan_interval,
-                    ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)),
+                    vol.Optional(CONF_API_BASE_URL, default=self.current_api_base_url): str,
+                    vol.Optional(CONF_DEVICE_ACCESS_TOKEN, default=self.current_device_access_token): str,
+                    vol.Optional(CONF_SCAN_INTERVAL, default=self.current_scan_interval): vol.All(
+                        vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)
+                    ),
                 }
             ),
             errors=errors,
