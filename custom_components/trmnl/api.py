@@ -16,7 +16,7 @@ class TrmnlApiClient:
         self.api_base_url = api_base_url.rstrip('/')
         self.headers = {
             "accept": "application/json",
-            "access-token": self.api_key # Updated header for all requests
+            "Authorization": f"Bearer {self.api_key}" # Reverted to Bearer token
         }
 
     def get_devices(self):
