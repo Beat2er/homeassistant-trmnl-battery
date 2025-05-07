@@ -33,7 +33,7 @@ This integration allows you to monitor your TRMNL e-ink display devices from Hom
 2. Click "+ Add Integration"
 3. Search for "TRMNL"
 4. Enter your API key (you can find this in your TRMNL account).
-5. Optionally, you can configure the **API Endpoint URL** if you are using a self-hosted or alternative TRMNL service. The default is `https://usetrmnl.com/api/devices`.
+5. Optionally, you can configure the **API Base URL** if you are using a self-hosted or alternative TRMNL service (e.g., `https://your.trmnl.server.com`). The default is `https://usetrmnl.com`. The integration will automatically append paths like `/api/devices` and `/api/current_screen` to this base URL.
 6. Optionally, you can configure the **Polling Interval** in seconds. This determines how frequently Home Assistant checks for updates from the TRMNL API. The default is 300 seconds (5 minutes), and the minimum allowed is 60 seconds (1 minute).
 
 These settings can also be changed later by going to the integration's options (Settings -> Devices & Services -> TRMNL -> Configure).

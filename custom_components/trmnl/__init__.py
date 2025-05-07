@@ -13,9 +13,9 @@ from .const import (
     DOMAIN,
     CONF_API_KEY,
     CONF_SCAN_INTERVAL,
-    CONF_API_ENDPOINT,
+    CONF_API_BASE_URL, # Updated
     DEFAULT_SCAN_INTERVAL,
-    DEFAULT_API_ENDPOINT,
+    DEFAULT_API_BASE_URL, # Updated
 )
 from .api import TrmnlApiClient
 
@@ -35,10 +35,10 @@ async def async_setup(hass: HomeAssistant, config: dict):
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up TRMNL from a config entry."""
     api_key = entry.data[CONF_API_KEY]
-    api_endpoint = entry.data.get(CONF_API_ENDPOINT, DEFAULT_API_ENDPOINT)
+    api_base_url = entry.data.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL) # Updated
     scan_interval = entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
-    client = TrmnlApiClient(api_key, api_endpoint)
+    client = TrmnlApiClient(api_key, api_base_url) # Updated
 
     coordinator = DataUpdateCoordinator(
         hass,
