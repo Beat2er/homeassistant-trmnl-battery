@@ -2,19 +2,41 @@
   "config": {
     "step": {
       "user": {
-        "title": "TRMNL E-Ink Display",
-        "description": "Enter your TRMNL API key (the user API key found in https://usetrmnl.com/account, not the device API key).",
+        "title": "TRMNL Setup",
+        "description": "Enter your TRMNL API key, API base URL, and optionally a Device Access Token for the 'Last Seen' sensor.",
         "data": {
-          "api_key": "API Key"
+          "api_key": "API Key",
+          "api_base_url": "API Base URL (Optional, e.g., https://usetrmnl.com)",
+          "device_access_token": "Device Access Token (Optional, for Last Seen sensor)",
+          "scan_interval": "Polling Interval - seconds (Optional, min 60)"
         }
       }
     },
     "error": {
-      "invalid_auth": "Invalid API key",
-      "unknown": "Unexpected error occurred"
+      "invalid_auth": "Invalid API key or unable to connect to the TRMNL API with the provided key/base URL. Please check your details and try again.",
+      "unknown": "An unknown error occurred. Please try again later.",
+      "invalid_scan_interval": "Polling interval must be at least 60 seconds."
     },
     "abort": {
-      "already_configured": "TRMNL is already configured"
+      "already_configured": "This TRMNL account is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "TRMNL Options",
+        "description": "Adjust the API base URL, Device Access Token, and polling interval for your TRMNL integration.",
+        "data": {
+          "api_base_url": "API Base URL (e.g., https://usetrmnl.com)",
+          "device_access_token": "Device Access Token (Optional, for Last Seen sensor, leave blank to disable)",
+          "scan_interval": "Polling Interval - seconds (min 60)"
+        }
+      }
+    },
+    "error": {
+        "invalid_base_url_auth": "Failed to connect to the new API base URL. Please ensure it is correct and the API key is valid for it.",
+        "invalid_scan_interval": "Polling interval must be at least 60 seconds.",
+        "unknown": "An unknown error occurred while saving options. Please try again."
     }
   }
 }
