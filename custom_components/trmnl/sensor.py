@@ -97,7 +97,7 @@ class TrmnlBatterySensor(TrmnlBaseSensor):
         """Return the state of the sensor."""
         device_data = self.get_device_data()
         if device_data:
-            return device_data["battery_voltage"]
+            return float(device_data["battery_voltage"])
         return None
 
     @property
@@ -139,7 +139,7 @@ class TrmnlBatteryPercentageSensor(TrmnlBaseSensor):
         """Return the state of the sensor."""
         device_data = self.get_device_data()
         if device_data:
-            return calculate_battery_percentage(device_data["battery_voltage"])
+            return calculate_battery_percentage(float(device_data["battery_voltage"]))
         return None
 
     @property
