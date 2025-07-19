@@ -6,9 +6,23 @@
 
 This integration allows you to monitor your TRMNL e-ink display devices from Home Assistant, showing battery voltage, battery percentage, and WiFi signal strength.
 
+## Forked
+
+This repository is a fork. The original developer / integration is here:
+
+https://github.com/Beat2er/homeassistant-trmnl-battery
+
+All I've done is change the way the 'Battery Percentage' is worked out.
+
+I noticed the battery percentage reported by this integration is a little out. Around 9-10% in my case.
+
+Looking at the code as compared with a CURL response, I noticed the CURL response provides the 'percentage_charged', whereas this integration doesn't use that, rather uses the min and max voltages to work out the percentage. I don't know if perhaps this additional property is new and that's why it's not used?
+
+However this version reports the same battery percentage as what TRMNL is reporting now.
+
 ## Quick Add to HACS
 
-[![Open your Home Assistant instance and add this repository.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Beat2er&repository=homeassistant-trmnl-battery&category=integration)
+[![Open your Home Assistant instance and add this repository.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jamesbrindle&repository=homeassistant-trmnl-battery&category=integration)
 
 ## Installation
 
@@ -17,7 +31,7 @@ This integration allows you to monitor your TRMNL e-ink display devices from Hom
 1. Ensure that [HACS](https://hacs.xyz/) is installed
 2. Go to HACS -> Integrations
 3. Click on the three dots in the top right corner and select "Custom repositories"
-4. Add `https://github.com/Beat2er/homeassistant-trmnl-battery` as a custom repository (Category: Integration)
+4. Add `https://github.com/jamesbrindle/homeassistant-trmnl-battery` as a custom repository (Category: Integration)
 5. Click "Install" on the TRMNL integration
 6. Restart Home Assistant
 
