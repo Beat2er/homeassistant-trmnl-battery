@@ -15,15 +15,15 @@ from .const import DOMAIN, MIN_VOLTAGE, MAX_VOLTAGE, CONF_DEVICE_ACCESS_TOKEN # 
 
 _LOGGER = logging.getLogger(__name__)
 
-def calculate_battery_percentage(voltage):
-    """Calculate battery percentage based on voltage."""
-    if voltage <= MIN_VOLTAGE:
-        return 0
-    if voltage >= MAX_VOLTAGE:
-        return 100
-
-    percentage = ((voltage - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE)) * 100
-    return round(percentage)
+# def calculate_battery_percentage(voltage):
+#    """Calculate battery percentage based on voltage."""
+#    if voltage <= MIN_VOLTAGE:
+#        return 0
+#    if voltage >= MAX_VOLTAGE:
+#        return 100
+#
+#    percentage = ((voltage - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE)) * 100
+#    return round(percentage)
 
 async def async_setup_entry(
         hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
@@ -120,7 +120,7 @@ class TrmnlBatterySensor(TrmnlBaseSensor):
         """Return the icon of the sensor."""
         return "mdi:battery"
 
-
+# Altered class to use 'percentage_charged' from the API JSON response instead of calculating from min and max voltages
 class TrmnlBatteryPercentageSensor(TrmnlBaseSensor):
     """Representation of a TRMNL battery percentage sensor."""
 
@@ -138,8 +138,8 @@ class TrmnlBatteryPercentageSensor(TrmnlBaseSensor):
     def state(self):
         """Return the state of the sensor."""
         device_data = self.get_device_data()
-        if device_data:
-            return calculate_battery_percentage(float(device_data["battery_voltage"]))
+        if device_data and "percent_charged" in device_data:
+            return round(float(device_data["percent_charged"]))
         return None
 
     @property
