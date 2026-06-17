@@ -138,9 +138,19 @@ class TrmnlBatteryPercentageSensor(TrmnlBaseSensor):
     def state(self):
         """Return the state of the sensor."""
         device_data = self.get_device_data()
-        if device_data:
-            return calculate_battery_percentage(float(device_data["battery_voltage"]))
-        return None
+        if not device_data:
+            return None
+        # Prefer the device's own state-of-charge estimate (`percent_charged`)
+        # returned by the TRMNL API. Deriving the percentage from `battery_voltage`
+        # via a linear map is unreliable: LiPo voltage is highly non-linear with
+        # charge, and the reported voltage swings outside the 3.0-4.2 V window the
+        # linear map assumes (e.g. it reads ~4.7 V while charging), which clamps
+        # the result to 100% the moment the device is plugged in.
+        percent_charged = device_data.get("percent_charged")
+        if percent_charged is not None:
+            return round(float(percent_charged))
+        # Fall back to the voltage-based estimate if the API omits percent_charged.
+        return calculate_battery_percentage(float(device_data["battery_voltage"]))
 
     @property
     def unit_of_measurement(self):
