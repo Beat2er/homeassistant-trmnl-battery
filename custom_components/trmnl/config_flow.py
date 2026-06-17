@@ -86,9 +86,6 @@ class TrmnlFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 try:
                     info = await self._validate_input(self.hass, processed_input)
-                    await self.async_set_unique_id(processed_input[CONF_API_KEY])
-                    self._abort_if_unique_id_configured()
-                    return self.async_create_entry(title=info["title"], data=processed_input)
                 except InvalidAuth:
                     errors["base"] = "invalid_auth"
                 except ConnectionError:
@@ -96,6 +93,14 @@ class TrmnlFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 except Exception:
                     _LOGGER.exception("Unexpected exception")
                     errors["base"] = "unknown"
+                else:
+                    # set_unique_id + abort_if_unique_id_configured must run OUTSIDE the
+                    # broad try/except above: AbortFlow inherits from Exception, so the
+                    # bare `except Exception` would swallow the duplicate-entry abort and
+                    # surface it as "unknown error" instead of "already configured".
+                    await self.async_set_unique_id(processed_input[CONF_API_KEY])
+                    self._abort_if_unique_id_configured()
+                    return self.async_create_entry(title=info["title"], data=processed_input)
 
         return self.async_show_form(
             step_id="user",
