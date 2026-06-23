@@ -1,6 +1,5 @@
 """Sensor platform for TRMNL integration."""
 import logging
-from datetime import datetime
 
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry

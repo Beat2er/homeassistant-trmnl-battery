@@ -1,12 +1,10 @@
 """TRMNL e-ink display integration."""
-import asyncio
 import logging
 from datetime import timedelta
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
