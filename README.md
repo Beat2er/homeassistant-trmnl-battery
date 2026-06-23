@@ -46,7 +46,8 @@ For each TRMNL device, the integration creates the following entities:
 - **Battery Voltage**: Shows the current battery voltage in volts.
 - **Battery Percentage**: Shows the calculated battery level as a percentage.
 - **WiFi Signal Strength**: Shows the WiFi RSSI value in dBm.
-- **Last Seen** (Optional): Shows the timestamp of the last successful screen render (`rendered_at`) by the TRMNL server for your account, fetched from the `/api/current_screen` endpoint. This sensor is **only created if you provide the "Device Access Token"** during configuration. It is updated only when the TRMNL API provides a new, non-null `rendered_at` timestamp; if the API returns `null` or the data is unavailable, this sensor will retain the last known valid render time.
+- **Last Seen**: Shows when the device last contacted the TRMNL server (`last_ping_at`). Always created; no Device Access Token required.
+- **Last Render** (requires Device Access Token): Shows the timestamp of the last successful screen render (`rendered_at`) by the TRMNL server for your account, fetched from the `/api/current_screen` endpoint. This sensor is **only created if you provide the "Device Access Token"** during configuration. It is updated only when the TRMNL API provides a new, non-null `rendered_at` timestamp; if the API returns `null` or the data is unavailable, this sensor will retain the last known valid render time.
 
 All sensors include a `last_updated` attribute that shows when Home Assistant last retrieved data from the TRMNL API.
 

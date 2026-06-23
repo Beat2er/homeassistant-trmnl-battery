@@ -47,8 +47,9 @@ async def async_setup_entry(
         entities.append(TrmnlBatterySensor(coordinator, device))
         entities.append(TrmnlBatteryPercentageSensor(coordinator, device))
         entities.append(TrmnlRssiSensor(coordinator, device))
-        # Conditionally add TrmnlLastSeenSensor
-        if entry.data.get(CONF_DEVICE_ACCESS_TOKEN): # Check if token is provided
+        entities.append(TrmnlLastPingSensor(coordinator, device))
+        # The render-based "Last Render" sensor needs the optional Device Access Token.
+        if entry.data.get(CONF_DEVICE_ACCESS_TOKEN):
             entities.append(TrmnlLastSeenSensor(coordinator, device))
 
     async_add_entities(entities)
@@ -226,7 +227,7 @@ class TrmnlRssiSensor(TrmnlBaseSensor):
 
 
 class TrmnlLastSeenSensor(TrmnlBaseSensor):
-    """Representation of when the TRMNL device was last seen."""
+    """Representation of when the TRMNL server last rendered a new screen image."""
 
     @property
     def unique_id(self):
@@ -236,7 +237,7 @@ class TrmnlLastSeenSensor(TrmnlBaseSensor):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return f"{self._name} Last Seen"
+        return f"{self._name} Last Render"
 
     @property
     def state(self):
@@ -278,3 +279,54 @@ class TrmnlLastSeenSensor(TrmnlBaseSensor):
     def icon(self):
         """Return the icon of the sensor."""
         return "mdi:clock-outline"
+
+
+class TrmnlLastPingSensor(TrmnlBaseSensor):
+    """When the device last contacted the TRMNL server (from /api/devices, no token needed)."""
+
+    @property
+    def unique_id(self):
+        """Return a unique ID to use for this entity."""
+        return f"{self._mac_address}_last_ping"
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"{self._name} Last Seen"
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        device_data = self.get_device_data()
+        if not device_data:
+            return None
+        last_ping = device_data.get("last_ping_at")
+        if not last_ping:
+            return None
+        parsed = dt_util.parse_datetime(last_ping)
+        if parsed is None:
+            _LOGGER.warning(
+                "Failed to parse 'last_ping_at' timestamp '%s' for device %s",
+                last_ping, self._friendly_id,
+            )
+            return None
+        return dt_util.as_utc(parsed).isoformat()
+
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes, including the hardware ping timestamp."""
+        attrs = super().extra_state_attributes
+        device_data = self.get_device_data()
+        if device_data:
+            attrs["hardware_last_ping_at"] = device_data.get("hardware_last_ping_at")
+        return attrs
+
+    @property
+    def device_class(self):
+        """Return the device class of the sensor."""
+        return "timestamp"
+
+    @property
+    def icon(self):
+        """Return the icon of the sensor."""
+        return "mdi:access-point-check"
