@@ -16,7 +16,6 @@ from .const import (
     MIN_VOLTAGE,
     MAX_VOLTAGE,
     LIPO_SOC_CURVE,
-    CONF_DEVICE_ACCESS_TOKEN,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,9 +48,6 @@ async def async_setup_entry(
         entities.append(TrmnlRssiSensor(coordinator, device))
         entities.append(TrmnlWifiStrengthSensor(coordinator, device))
         entities.append(TrmnlLastPingSensor(coordinator, device))
-        # The render-based "Last Render" sensor needs the optional Device Access Token.
-        if entry.data.get(CONF_DEVICE_ACCESS_TOKEN):
-            entities.append(TrmnlLastSeenSensor(coordinator, device))
 
     async_add_entities(entities)
 
@@ -262,61 +258,6 @@ class TrmnlWifiStrengthSensor(TrmnlBaseSensor):
     def icon(self):
         """Return the icon of the sensor."""
         return "mdi:wifi"
-
-
-class TrmnlLastSeenSensor(TrmnlBaseSensor):
-    """Representation of when the TRMNL server last rendered a new screen image."""
-
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this entity."""
-        return f"{self._mac_address}_last_seen"
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return f"{self._name} Last Render"
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        rendered_at_str = self.coordinator.last_rendered_at
-        if rendered_at_str:
-            try:
-                # Attempt to parse the timestamp.
-                # TRMNL API's `rendered_at` format is assumed to be ISO 8601.
-                # If it's a different format, this parsing might need adjustment.
-                # Example from a similar API: "2023-10-26T10:30:00Z"
-                parsed_datetime = dt_util.parse_datetime(rendered_at_str)
-                if parsed_datetime:
-                    # Ensure it's timezone-aware and in UTC for Home Assistant
-                    return dt_util.as_utc(parsed_datetime).isoformat()
-                else:
-                    _LOGGER.warning(
-                        "Failed to parse 'rendered_at' timestamp: %s for device %s",
-                        rendered_at_str,
-                        self._friendly_id
-                    )
-                    return None # Or handle as an error state if preferred
-            except ValueError as e:
-                _LOGGER.error(
-                    "ValueError parsing 'rendered_at' timestamp '%s' for device %s: %s",
-                    rendered_at_str,
-                    self._friendly_id,
-                    e
-                )
-                return None
-        return None
-
-    @property
-    def device_class(self):
-        """Return the device class of the sensor."""
-        return "timestamp"
-
-    @property
-    def icon(self):
-        """Return the icon of the sensor."""
-        return "mdi:clock-outline"
 
 
 class TrmnlLastPingSensor(TrmnlBaseSensor):
