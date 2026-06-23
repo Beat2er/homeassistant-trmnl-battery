@@ -11,19 +11,29 @@ from homeassistant.helpers.update_coordinator import (
 )
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, MIN_VOLTAGE, MAX_VOLTAGE, CONF_DEVICE_ACCESS_TOKEN # Added import
+from .const import (
+    DOMAIN,
+    MIN_VOLTAGE,
+    MAX_VOLTAGE,
+    LIPO_SOC_CURVE,
+    CONF_DEVICE_ACCESS_TOKEN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 def calculate_battery_percentage(voltage):
-    """Calculate battery percentage based on voltage."""
+    """Estimate battery percentage from voltage via the LiPo curve (fallback for percent_charged)."""
     if voltage <= MIN_VOLTAGE:
         return 0
     if voltage >= MAX_VOLTAGE:
         return 100
 
-    percentage = ((voltage - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE)) * 100
-    return round(percentage)
+    for (low_v, low_pct), (high_v, high_pct) in zip(LIPO_SOC_CURVE, LIPO_SOC_CURVE[1:]):
+        if low_v <= voltage <= high_v:
+            ratio = (voltage - low_v) / (high_v - low_v)
+            return round(low_pct + ratio * (high_pct - low_pct))
+
+    return 0 if voltage < LIPO_SOC_CURVE[0][0] else 100
 
 async def async_setup_entry(
         hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback

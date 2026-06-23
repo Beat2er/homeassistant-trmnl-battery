@@ -52,10 +52,9 @@ All sensors include a `last_updated` attribute that shows when Home Assistant la
 
 ## Battery Calculation
 
-The integration calculates battery percentage based on the following assumptions:
-
-- 2.75V = 0% (device disconnects at this voltage per documentation)
-- 4.2V = 100% (typical fully charged LiPo battery)
+The battery percentage uses the device's reported `percent_charged` when available. If it is
+missing, it falls back to estimating from voltage using a non-linear LiPo discharge curve
+(3.0V = 0%, 4.2V = 100%).
 
 ## Data Update Frequency
 
