@@ -29,8 +29,15 @@ class TrmnlFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _validate_input(self, hass: HomeAssistant, data: dict):
         """Validate the user input allows us to connect."""
+        api_key = data[CONF_API_KEY]
+        if not api_key.startswith("user_"):
+            # Not fatal, but the account API Key always starts with "user_".
+            _LOGGER.warning(
+                "TRMNL API key does not start with 'user_'; you may be using the wrong "
+                "key. Use the account API Key from https://trmnl.com/account."
+            )
         client = TrmnlApiClient(
-            data[CONF_API_KEY],
+            api_key,
             data.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL),
         )
         try:
