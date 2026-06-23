@@ -47,6 +47,7 @@ async def async_setup_entry(
         entities.append(TrmnlBatterySensor(coordinator, device))
         entities.append(TrmnlBatteryPercentageSensor(coordinator, device))
         entities.append(TrmnlRssiSensor(coordinator, device))
+        entities.append(TrmnlWifiStrengthSensor(coordinator, device))
         entities.append(TrmnlLastPingSensor(coordinator, device))
         # The render-based "Last Render" sensor needs the optional Device Access Token.
         if entry.data.get(CONF_DEVICE_ACCESS_TOKEN):
@@ -214,6 +215,43 @@ class TrmnlRssiSensor(TrmnlBaseSensor):
     def device_class(self):
         """Return the device class of the sensor."""
         return "signal_strength"
+
+    @property
+    def state_class(self):
+        """Return the state class of the sensor."""
+        return SensorStateClass.MEASUREMENT
+
+    @property
+    def icon(self):
+        """Return the icon of the sensor."""
+        return "mdi:wifi"
+
+
+class TrmnlWifiStrengthSensor(TrmnlBaseSensor):
+    """Representation of the TRMNL WiFi signal quality (0-100%)."""
+
+    @property
+    def unique_id(self):
+        """Return a unique ID to use for this entity."""
+        return f"{self._mac_address}_wifi_strength"
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return f"{self._name} WiFi Signal"
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        device_data = self.get_device_data()
+        if device_data:
+            return device_data.get("wifi_strength")
+        return None
+
+    @property
+    def unit_of_measurement(self):
+        """Return the unit of measurement."""
+        return "%"
 
     @property
     def state_class(self):
