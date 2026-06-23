@@ -1,18 +1,36 @@
 {
   "data": [
     {
+      "id": 12345,
       "name": "Kitchen TRMNL",
       "friendly_id": "ABC123",
       "mac_address": "AA:BB:CC:DD:EE:FF",
       "battery_voltage": 3.92,
-      "rssi": -68
+      "rssi": -68,
+      "wifi_band": "2.4",
+      "sleep_mode_enabled": false,
+      "sleep_start_time": 1320,
+      "sleep_end_time": 480,
+      "last_ping_at": "2026-06-23T18:55:43.598Z",
+      "percent_charged": 76.67,
+      "wifi_strength": 72,
+      "hardware_last_ping_at": "2026-06-23T18:55:43.598Z"
     },
     {
+      "id": 12346,
       "name": "Office TRMNL",
       "friendly_id": "XYZ789",
       "mac_address": "11:22:33:44:55:66",
       "battery_voltage": 4.15,
-      "rssi": -54
+      "rssi": -54,
+      "wifi_band": "2.4",
+      "sleep_mode_enabled": false,
+      "sleep_start_time": 1320,
+      "sleep_end_time": 480,
+      "last_ping_at": "2026-06-23T18:55:43.598Z",
+      "percent_charged": 95.83,
+      "wifi_strength": 90,
+      "hardware_last_ping_at": "2026-06-23T18:55:43.598Z"
     }
   ]
 }
