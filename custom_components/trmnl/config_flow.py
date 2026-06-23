@@ -110,30 +110,29 @@ class TrmnlFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return TrmnlOptionsFlowHandler(config_entry)
+        return TrmnlOptionsFlowHandler()
 
 class TrmnlOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle TRMNL options."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry):
-        self.config_entry = config_entry
-        self.current_api_base_url = self.config_entry.data.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL)
-        self.current_scan_interval = self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-
     async def async_step_init(self, user_input=None):
         errors = {}
+        # `self.config_entry` is provided by Home Assistant (read-only property).
+        current_api_base_url = self.config_entry.data.get(CONF_API_BASE_URL, DEFAULT_API_BASE_URL)
+        current_scan_interval = self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+
         if user_input is not None:
             updated_data = self.config_entry.data.copy()
             needs_main_api_validation = False
 
             # Process API Base URL
-            new_api_base_url = user_input.get(CONF_API_BASE_URL, self.current_api_base_url).rstrip('/')
-            if new_api_base_url != self.current_api_base_url:
+            new_api_base_url = user_input.get(CONF_API_BASE_URL, current_api_base_url).rstrip('/')
+            if new_api_base_url != current_api_base_url:
                 updated_data[CONF_API_BASE_URL] = new_api_base_url
                 needs_main_api_validation = True
 
             # Process Scan Interval
-            new_scan_interval = user_input.get(CONF_SCAN_INTERVAL, self.current_scan_interval)
+            new_scan_interval = user_input.get(CONF_SCAN_INTERVAL, current_scan_interval)
             if new_scan_interval < MIN_SCAN_INTERVAL:
                 errors["base"] = "invalid_scan_interval"
             else:
@@ -166,8 +165,8 @@ class TrmnlOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(CONF_API_BASE_URL, default=self.current_api_base_url): str,
-                    vol.Optional(CONF_SCAN_INTERVAL, default=self.current_scan_interval): vol.All(
+                    vol.Optional(CONF_API_BASE_URL, default=current_api_base_url): str,
+                    vol.Optional(CONF_SCAN_INTERVAL, default=current_scan_interval): vol.All(
                         vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)
                     ),
                 }
