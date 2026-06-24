@@ -1,0 +1,19 @@
+[project]
+name = "homeassistant-trmnl-battery-dev"
+version = "0.0.0"
+description = "Development environment for the TRMNL Home Assistant custom integration"
+requires-python = ">=3.13"
+# The integration itself is not a Python package; this project only declares the
+# tooling needed to develop/lint it locally.
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "homeassistant",
+    "requests>=2.25.1",
+    "ruff",
+]
+
+[tool.uv]
+# Do not try to build/install this directory as a package; we only want the deps.
+package = false

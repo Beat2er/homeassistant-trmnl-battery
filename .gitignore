@@ -1,3 +1,6 @@
+# uv / virtualenv (local dev environment)
+.venv/
+
 # Python cache
 __pycache__/
 *.py[cod]
