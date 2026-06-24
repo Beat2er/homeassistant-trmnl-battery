@@ -6,7 +6,6 @@ import requests
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import config_validation as cv
 
 from .api import TrmnlApiClient
 from .const import (
